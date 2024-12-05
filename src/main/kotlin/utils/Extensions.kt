@@ -24,6 +24,11 @@ fun String.lastDigit(): Char = this.last { it.isDigit() }
 fun String.splitBySpace(): List<String> = split(" ").filter { it.isNotBlank() }
 
 /**
+ * Split a string by empty lines.
+ */
+fun String.splitByEmptyLine(): List<String> = this.split("\n\n")
+
+/**
  * Split a string into a list of integers.
  * Ex: "01234" becomes [0, 1, 2, 3, 4]
  */
