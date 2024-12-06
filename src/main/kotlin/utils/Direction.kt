@@ -91,6 +91,18 @@ enum class Direction {
                     Turn.AHEAD -> DOWN_RIGHT
                 }
         }
+
+    fun invert(): Direction =
+        when (this) {
+            UP -> DOWN
+            DOWN -> UP
+            LEFT -> RIGHT
+            RIGHT -> LEFT
+            UP_LEFT -> DOWN_RIGHT
+            UP_RIGHT -> DOWN_LEFT
+            DOWN_LEFT -> UP_RIGHT
+            DOWN_RIGHT -> UP_LEFT
+        }
 }
 
 enum class Turn {

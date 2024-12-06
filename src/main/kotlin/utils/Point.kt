@@ -53,19 +53,17 @@ data class Point(
     /**
      * Returns a 3x3 matrix with all neighbors of this point, including this point at the center if [includeSelf] is true.
      */
-    fun allNeighbors(includeSelf: Boolean = true): Matrix<Point> =
-        Matrix(
-            listOf(
-                listOf(move(-1, -1), move(0, -1), move(1, -1)),
-                listOfNotNull(move(-1, 0), this.takeIf { includeSelf }, move(1, 0)),
-                listOf(move(-1, 1), move(0, 1), move(1, 1)),
-            ),
+    fun allNeighbors(includeSelf: Boolean = true): List<List<Point>> =
+        listOf(
+            listOf(move(-1, -1), move(0, -1), move(1, -1)),
+            listOfNotNull(move(-1, 0), this.takeIf { includeSelf }, move(1, 0)),
+            listOf(move(-1, 1), move(0, 1), move(1, 1)),
         )
 
     /**
      * Returns the direction to the given adjacent point.
      */
-    fun directionToAdjacent(other: Point): Direction =
+    infix fun directionToAdjacent(other: Point): Direction =
         if (x == other.x) {
             if (y - 1 == other.y) UP else DOWN
         } else if (y == other.y) {
@@ -80,8 +78,9 @@ data class Point(
 
     /**
      * Rotate the point by the given [rotation] degrees, a multiple of 90 degrees only.
+     * Positive values rotate clockwise, negative values rotate counterclockwise.
      */
-    fun rotate(rotation: Int): Point =
+    infix fun rotate(rotation: Int): Point =
         when (rotation % 360) {
             0 -> this
             90 -> Point(y, -x)

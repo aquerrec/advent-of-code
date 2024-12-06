@@ -7,7 +7,7 @@ package utils
 class Matrix<T>(
     inputMatrix: List<List<T>>,
 ) {
-    private val matrix: List<List<T>> = MutableList(inputMatrix.size) { i -> inputMatrix[i].toMutableList() }
+    private val matrix = MutableList(inputMatrix.size) { i -> inputMatrix[i].toMutableList() }
 
     val rowsIndices = matrix.indices
     val columnsIndices = matrix.first().indices
@@ -51,6 +51,18 @@ class Matrix<T>(
 
     fun getPointOrNull(point: Point) = getPointOrNull(point.y, point.x)
 
+    /**
+     * Returns a new matrix with the element at the given [point] set to [value].
+     */
+    fun setPoint(
+        point: Point,
+        value: T,
+    ): Matrix<T> {
+        val newMatrix = this.copy()
+        newMatrix.matrix[point.y][point.x] = value
+        return newMatrix
+    }
+
     fun findAll(value: T): List<Point> =
         matrix
             .flatMapIndexed { rowIndex, columns ->
@@ -58,6 +70,16 @@ class Matrix<T>(
                     cellValue.takeIf { it == value }?.let { Point(colIndex, rowIndex) }
                 }
             }
+
+    fun first(predicate: (T) -> Boolean): Point {
+        matrix
+            .forEachIndexed { rowIndex, columns ->
+                columns.forEachIndexed { colIndex, value ->
+                    if (predicate(value)) return Point(colIndex, rowIndex)
+                }
+            }
+        throw NoSuchElementException("Matrix contains no element matching the predicate.")
+    }
 
     /**
      * Returns the row at the given [row] index.
@@ -87,10 +109,10 @@ class Matrix<T>(
             this[row + 1, col],
             this[row, col - 1],
             this[row, col + 1],
-            this[row - 1, col - 1].takeIf { includeDiagonal },
-            this[row - 1, col + 1].takeIf { includeDiagonal },
-            this[row + 1, col - 1].takeIf { includeDiagonal },
-            this[row + 1, col + 1].takeIf { includeDiagonal },
+            if (includeDiagonal) this[row - 1, col - 1] else null,
+            if (includeDiagonal) this[row - 1, col + 1] else null,
+            if (includeDiagonal) this[row + 1, col - 1] else null,
+            if (includeDiagonal) this[row + 1, col + 1] else null,
         )
 
     /**
@@ -109,10 +131,10 @@ class Matrix<T>(
             getPointOrNull(row + 1, col),
             getPointOrNull(row, col - 1),
             getPointOrNull(row, col + 1),
-            getPointOrNull(row - 1, col - 1).takeIf { includeDiagonal },
-            getPointOrNull(row - 1, col + 1).takeIf { includeDiagonal },
-            getPointOrNull(row + 1, col - 1).takeIf { includeDiagonal },
-            getPointOrNull(row + 1, col + 1).takeIf { includeDiagonal },
+            if (includeDiagonal) getPointOrNull(row - 1, col - 1) else null,
+            if (includeDiagonal) getPointOrNull(row - 1, col + 1) else null,
+            if (includeDiagonal) getPointOrNull(row + 1, col - 1) else null,
+            if (includeDiagonal) getPointOrNull(row + 1, col + 1) else null,
         )
 
     fun neighborsPoints(
@@ -130,6 +152,8 @@ class Matrix<T>(
                 }
             },
         )
+
+    fun copy() = Matrix(matrix)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

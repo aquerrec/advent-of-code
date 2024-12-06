@@ -10,6 +10,8 @@ class InputReader {
 
         fun readSequence(fileName: String): Sequence<String> = readLines(fileName).asSequence()
 
+        fun readMatrix(fileName: String): Matrix<Char> = readLines(fileName).map { it.toList() }.toMatrix()
+
         private fun fromResources(fileName: String): BufferedReader =
             InputReader::class.java.classLoader
                 .getResourceAsStream(fileName)!!
