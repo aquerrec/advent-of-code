@@ -63,11 +63,31 @@ class Matrix<T>(
         return newMatrix
     }
 
+    /**
+     * Returns a new matrix with the elements at the given [points] set to [value].
+     */
+    fun setPoints(
+        points: Collection<Point>,
+        value: T,
+    ): Matrix<T> {
+        val newMatrix = this.copy()
+        points.filter { it in this }.forEach { newMatrix.matrix[it.y][it.x] = value }
+        return newMatrix
+    }
+
     fun findAll(value: T): List<Point> =
         matrix
             .flatMapIndexed { rowIndex, columns ->
                 columns.mapIndexedNotNull { colIndex, cellValue ->
                     cellValue.takeIf { it == value }?.let { Point(colIndex, rowIndex) }
+                }
+            }
+
+    fun findAll(predicate: (T) -> Boolean): List<Pair<Point, T>> =
+        matrix
+            .flatMapIndexed { rowIndex, columns ->
+                columns.mapIndexedNotNull { colIndex, cellValue ->
+                    if (predicate(cellValue)) Point(colIndex, rowIndex) to cellValue else null
                 }
             }
 

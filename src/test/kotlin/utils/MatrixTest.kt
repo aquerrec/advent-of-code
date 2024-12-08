@@ -44,13 +44,33 @@ class MatrixTest {
     }
 
     @Test
-    fun `should return a new matrix and have change the desired cell with the given value`() {
+    fun `should return a new matrix and have changed the desired cell with the given value`() {
         matrix.setPoint(Point(2, 1), "XX") shouldBe
             Matrix(
                 listOf(
                     listOf("A1", "B1", "C1"),
                     listOf("A2", "B2", "XX"),
                     listOf("A3", "B3", "C3"),
+                    listOf("A4", "B4", "C4"),
+                    listOf("A5", "B5", "C5"),
+                ),
+            )
+    }
+
+    @Test
+    fun `should return a new matrix and have changed the desired cells with the given value`() {
+        matrix.setPoints(
+            listOf(
+                Point(2, 1),
+                Point(0, 2),
+            ),
+            "XX",
+        ) shouldBe
+            Matrix(
+                listOf(
+                    listOf("A1", "B1", "C1"),
+                    listOf("A2", "B2", "XX"),
+                    listOf("XX", "B3", "C3"),
                     listOf("A4", "B4", "C4"),
                     listOf("A5", "B5", "C5"),
                 ),
@@ -66,6 +86,23 @@ class MatrixTest {
                 listOf("G", "A", "I"),
             ),
         ).findAll("A") shouldBe listOf(Point(0, 0), Point(1, 1), Point(1, 2))
+    }
+
+    @Test
+    fun `should return all the points matching the given predicate`() {
+        (Point(0, 0) to 'A') shouldBe (Point(0, 0) to 'A')
+        Matrix(
+            listOf(
+                listOf("A", "B", "C"),
+                listOf("D", "A", "F"),
+                listOf("G", "A", "I"),
+            ),
+        ).findAll { it == "A" } shouldBe
+            listOf(
+                Point(0, 0) to "A",
+                Point(1, 1) to "A",
+                Point(1, 2) to "A",
+            )
     }
 
     @Test
