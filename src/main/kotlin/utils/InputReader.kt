@@ -8,6 +8,8 @@ class InputReader {
 
         fun readLines(fileName: String): List<String> = fromResources(fileName).readLines()
 
+        fun readFirstLine(fileName: String): String = fromResources(fileName).readLine()
+
         fun readSequence(fileName: String): Sequence<String> = readLines(fileName).asSequence()
 
         fun readMatrix(fileName: String): Matrix<Char> = readLines(fileName).map { it.toList() }.toMatrix()
