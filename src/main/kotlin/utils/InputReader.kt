@@ -14,6 +14,8 @@ class InputReader {
 
         fun readMatrix(fileName: String): Matrix<Char> = readLines(fileName).map { it.toList() }.toMatrix()
 
+        fun readMatrixOfInt(fileName: String): Matrix<Int> = readLines(fileName).map { value -> value.map { it.digitToInt() } }.toMatrix()
+
         private fun fromResources(fileName: String): BufferedReader =
             InputReader::class.java.classLoader
                 .getResourceAsStream(fileName)!!
