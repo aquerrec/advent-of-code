@@ -30,6 +30,11 @@ class ExtensionsTest {
     }
 
     @Test
+    fun `should split a string half`() {
+        "123456".splitHalf() shouldBe Pair("123", "456")
+    }
+
+    @Test
     fun `should split a string to integers`() {
         "01234".splitToInt() shouldBe listOf(0, 1, 2, 3, 4)
     }

@@ -29,6 +29,14 @@ fun String.splitBySpace(): List<String> = split(" ").filter { it.isNotBlank() }
 fun String.splitByEmptyLine(): List<String> = this.split("\n\n")
 
 /**
+ * Split a string in half.
+ */
+fun String.splitHalf(): Pair<String, String> {
+    val half = this.length / 2
+    return this.substring(0, half) to this.substring(half)
+}
+
+/**
  * Split a string into a list of integers.
  * Ex: "01234" becomes [0, 1, 2, 3, 4]
  */
