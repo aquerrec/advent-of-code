@@ -1,5 +1,7 @@
 package utils
 
+import kotlin.math.pow
+
 /**
  * A matrix of elements of type [T].
  * IMPORTANT! if thinking of the list of lists as a coordinate grid, row = y and col = x
@@ -7,18 +9,30 @@ package utils
 class Matrix<T>(
     inputMatrix: List<List<T>>,
 ) {
+    constructor(
+        rows: Int,
+        columns: Int,
+        data: Array<T>,
+    ) : this(
+        List(rows) { row ->
+            List(columns) { col ->
+                data[row * columns + col]
+            }
+        },
+    )
+
     private val matrix = MutableList(inputMatrix.size) { i -> inputMatrix[i].toMutableList() }
+
+    val rows = matrix.size
+    val columns = matrix.first().size
 
     val rowsIndices = matrix.indices
     val columnsIndices = matrix.first().indices
 
-    val rowsSize = matrix.size
-    val columnsSize = matrix.first().size
-
     init {
         require(inputMatrix.isNotEmpty()) { "Matrix must have at least one row" }
         require(inputMatrix.first().isNotEmpty()) { "Matrix must have at least one column" }
-        require(inputMatrix.all { it.size == columnsSize }) { "Matrix must have the same number of columns in each row" }
+        require(inputMatrix.all { it.size == columns }) { "Matrix must have the same number of columns in each row" }
     }
 
     fun contains(
@@ -29,10 +43,21 @@ class Matrix<T>(
     operator fun contains(point: Point) = contains(point.y, point.x)
 
     /**
-     * Returns the element at the given [row] and [col], null if out of bounds.
+     * Returns the element at the given [row] and [col].
      * Indexes are 0-based.
      */
     operator fun get(
+        row: Int,
+        col: Int,
+    ): T = matrix[row][col]
+
+    operator fun get(point: Point): T = matrix[point.y][point.x]
+
+    /**
+     * Returns the element at the given [row] and [col], null if out of bounds.
+     * Indexes are 0-based.
+     */
+    fun getOrNull(
         row: Int,
         col: Int,
     ): T? =
@@ -42,12 +67,12 @@ class Matrix<T>(
             matrix[row][col]
         }
 
-    operator fun get(point: Point): T? = get(point.y, point.x)
+    fun getOrNull(point: Point): T? = getOrNull(point.y, point.x)
 
     fun getPointOrNull(
         row: Int,
         col: Int,
-    ): Pair<Point, T>? = this[row, col]?.let { Point(col, row) to it }
+    ): Pair<Point, T>? = this.getOrNull(row, col)?.let { Point(col, row) to it }
 
     fun getPointOrNull(point: Point) = getPointOrNull(point.y, point.x)
 
@@ -125,14 +150,14 @@ class Matrix<T>(
         includeDiagonal: Boolean = false,
     ): List<T> =
         listOfNotNull(
-            this[row - 1, col],
-            this[row + 1, col],
-            this[row, col - 1],
-            this[row, col + 1],
-            if (includeDiagonal) this[row - 1, col - 1] else null,
-            if (includeDiagonal) this[row - 1, col + 1] else null,
-            if (includeDiagonal) this[row + 1, col - 1] else null,
-            if (includeDiagonal) this[row + 1, col + 1] else null,
+            this.getOrNull(row - 1, col),
+            this.getOrNull(row + 1, col),
+            this.getOrNull(row, col - 1),
+            this.getOrNull(row, col + 1),
+            if (includeDiagonal) this.getOrNull(row - 1, col - 1) else null,
+            if (includeDiagonal) this.getOrNull(row - 1, col + 1) else null,
+            if (includeDiagonal) this.getOrNull(row + 1, col - 1) else null,
+            if (includeDiagonal) this.getOrNull(row + 1, col + 1) else null,
         )
 
     /**
@@ -162,9 +187,12 @@ class Matrix<T>(
         includeDiagonal: Boolean = false,
     ) = neighborsPoints(point.y, point.x, includeDiagonal)
 
+    /**
+     * Transpose this matrix.
+     */
     fun transpose() =
         Matrix(
-            MutableList(matrix[0].size) { MutableList(matrix.size) { matrix[0][0] } }.also {
+            List(matrix[0].size) { MutableList(matrix.size) { matrix[0][0] } }.also {
                 matrix.forEachIndexed { rowIdx, row ->
                     row.forEachIndexed { colIdx, value ->
                         it[colIdx][rowIdx] = value
@@ -187,8 +215,121 @@ class Matrix<T>(
     override fun hashCode(): Int = matrix.hashCode()
 
     override fun toString(): String = matrix.joinToString("\n") { it.joinToString(" ") }
+
+    companion object {
+        /**
+         * Returns an identity matrix of order [n].
+         */
+        fun identity(n: Int): Matrix<Double> = Matrix(List(n) { row -> List(n) { col -> if (row == col) 1.0 else 0.0 } })
+
+        fun <T : Number> solveEquation(
+            left: Matrix<T>,
+            right: Matrix<T>,
+        ): Matrix<Double> = left.inverse().x(right)
+    }
 }
 
 fun <T> List<List<T>>.toMatrix() = Matrix(this)
 
 fun Sequence<String>.toMatrix() = Matrix(map { it.asSequence().toList() }.toList())
+
+/**
+ * Returns the determinant of the matrix.
+ * Uses the rule of Sarrus.
+ * Only works for square matrices.
+ */
+fun <T : Number> Matrix<T>.determinant(): Double {
+    require(this.rows == this.columns) { "Matrix must be square" }
+
+    when (this.rows) {
+        1 -> return this[0, 0].toDouble()
+        2 -> return this[0, 0].toDouble() * this[1, 1].toDouble() - this[0, 1].toDouble() * this[1, 0].toDouble()
+        else -> {
+            var det = 0.0
+            for (c in 0 until this.columns) {
+                var incValue = 1.0
+                var decValue = 1.0
+
+                for (r in this.rowsIndices) {
+                    incValue *= this[r, (c + r) % this.columns].toDouble()
+                    decValue *= this[this.rows - r - 1, (c + r) % this.columns].toDouble()
+                }
+                det += (incValue - decValue)
+            }
+            return det
+        }
+    }
+}
+
+operator fun <T : Number> Matrix<T>.times(other: Number): Matrix<Double> =
+    Matrix(
+        List(rows) { row ->
+            List(columns) { col ->
+                this[row, col].toDouble() * other.toDouble()
+            }
+        },
+    )
+
+/**
+ * Calculates an inverse matrix of a square matrix.
+ */
+fun <T : Number> Matrix<T>.inverse(): Matrix<Double> {
+    require(this.rows == this.columns) { "Matrix must be square" }
+
+    val det = this.determinant()
+    return if (det == 0.0) Matrix.identity(this.rows) else this.adjoint() * (det.pow(-1))
+}
+
+/**
+ * Returns the adjoint matrix of this matrix.
+ */
+fun <T : Number> Matrix<T>.adjoint(): Matrix<Double> {
+    require(this.rows == this.columns) { "Matrix must be square" }
+
+    return Matrix(
+        List(rows) { row ->
+            List(columns) { col ->
+                val sign = (-1.0).pow(row + col)
+                val cofactorDet = minorMatrix(row, col).determinant()
+                sign * cofactorDet
+            }
+        },
+    ).transpose()
+}
+
+/**
+ * Returns the minor matrix of this matrix.
+ * Minors are obtained by removing just one row and one column from square matrices. (first minors)
+ */
+fun <T : Number> Matrix<T>.minorMatrix(
+    row: Int,
+    col: Int,
+): Matrix<T> =
+    if (rows < 2 || columns < 2 || row >= rows || col >= columns) {
+        throw IllegalArgumentException("Index out of bound")
+    } else {
+        Matrix(
+            List(rows - 1) { r ->
+                List(columns - 1) { c ->
+                    val rowIndex = if (r >= row) r + 1 else r
+                    val colIndex = if (c >= col) c + 1 else c
+                    this[rowIndex, colIndex]
+                }
+            },
+        )
+    }
+
+/**
+ * Cross product of two matrices.
+ */
+infix fun <A : Number, B : Number> Matrix<A>.x(other: Matrix<B>): Matrix<Double> {
+    require(this.columns == other.rows)
+
+    return Matrix(
+        List(rows) { i ->
+            List(other.columns) { j ->
+                (0 until columns).sumOf { k -> this[i, k].toDouble() * other[k, j].toDouble() }
+            }
+        },
+    )
+}

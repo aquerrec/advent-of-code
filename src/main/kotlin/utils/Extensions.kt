@@ -43,6 +43,11 @@ fun String.splitHalf(): Pair<String, String> {
 fun String.splitToInt(): List<Int> = map(Character::getNumericValue)
 
 /**
+ * Removes all occurrences of the given values from the string.
+ */
+fun String.removeAll(vararg values: String): String = values.fold(this) { str, v -> str.replace(v, "") }
+
+/**
  * Adds the other nullable long value (0 if null) to this long value.
  */
 operator fun Long.plus(other: Long?): Long = this + (other ?: 0)
