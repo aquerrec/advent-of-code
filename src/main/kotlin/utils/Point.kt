@@ -41,6 +41,23 @@ data class Point(
         y: Int,
     ) = Point(this.x + x, this.y + y)
 
+    fun moveWithinBoundaries(
+        x: Int,
+        y: Int,
+        boundaries: Boundaries,
+        goOtherSide: Boolean = false,
+    ): Point {
+        val newX =
+            (this.x + x).let {
+                if (goOtherSide) Math.floorMod(it, boundaries.sizeX) else it.coerceIn(0, boundaries.maxX)
+            }
+        val newY =
+            (this.y + y).let {
+                if (goOtherSide) Math.floorMod(it, boundaries.sizeY) else it.coerceIn(0, boundaries.maxY)
+            }
+        return Point(newX, newY)
+    }
+
     operator fun plus(other: Point) = Point(x + other.x, y + other.y)
 
     operator fun minus(other: Point) = Point(x - other.x, y - other.y)
@@ -125,6 +142,28 @@ data class Point(
     fun manhattanDistance(to: Point): Int = abs(to.x - x) + abs(to.y - y)
 
     override fun toString(): String = "($x, $y)"
+}
+
+data class Boundaries(
+    val maxX: Int,
+    val maxY: Int,
+) {
+    val sizeX = maxX + 1
+    val sizeY = maxY + 1
+
+    companion object {
+        fun ofSize(
+            sizeX: Int,
+            sizeY: Int,
+        ) = Boundaries(sizeX - 1, sizeY - 1)
+    }
+}
+
+data class Rectangle(
+    val topLeft: Point,
+    val bottomRight: Point,
+) {
+    operator fun contains(point: Point): Boolean = point.x in topLeft.x..bottomRight.x && point.y in topLeft.y..bottomRight.y
 }
 
 /**

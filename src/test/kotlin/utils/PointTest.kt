@@ -35,6 +35,21 @@ class PointTest {
     }
 
     @Test
+    fun `should move the point within the boundaries`() {
+        val boundaries = Boundaries(10, 10)
+
+        Point(5, 5).moveWithinBoundaries(8, 8, boundaries) shouldBe Point(10, 10)
+        Point(5, 5).moveWithinBoundaries(-8, -8, boundaries) shouldBe Point(0, 0)
+        Point(5, 5).moveWithinBoundaries(-8, 8, boundaries) shouldBe Point(0, 10)
+        Point(5, 5).moveWithinBoundaries(8, -8, boundaries) shouldBe Point(10, 0)
+
+        Point(5, 5).moveWithinBoundaries(8, 8, boundaries, true) shouldBe Point(2, 2)
+        Point(5, 5).moveWithinBoundaries(-8, -8, boundaries, true) shouldBe Point(8, 8)
+        Point(5, 5).moveWithinBoundaries(-8, 8, boundaries, true) shouldBe Point(8, 2)
+        Point(5, 5).moveWithinBoundaries(8, -8, boundaries, true) shouldBe Point(2, 8)
+    }
+
+    @Test
     fun `should addition two points`() {
         Point(3, 5) + Point(2, 1) shouldBe Point(5, 6)
     }
