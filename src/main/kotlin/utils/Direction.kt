@@ -12,6 +12,8 @@ enum class Direction {
     ;
 
     companion object {
+        fun udlrEntries(): List<Direction> = listOf(UP, DOWN, LEFT, RIGHT)
+
         fun fromUDLR(udlr: Char): Direction =
             when (udlr) {
                 'U' -> UP

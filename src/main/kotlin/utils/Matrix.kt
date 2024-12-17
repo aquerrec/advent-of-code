@@ -201,6 +201,14 @@ class Matrix<T>(
             },
         )
 
+    fun groupByValue(): Map<T, List<Point>> =
+        matrix
+            .flatMapIndexed { rowIndex, columns ->
+                columns.mapIndexedNotNull { colIndex, cellValue ->
+                    cellValue.takeIf { it != null }?.let { Point(colIndex, rowIndex) to cellValue }
+                }
+            }.groupBy({ it.second }) { it.first }
+
     fun copy() = Matrix(matrix)
 
     override fun equals(other: Any?): Boolean {
