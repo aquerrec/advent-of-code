@@ -12,5 +12,11 @@ class Day01Test :
         day = 1,
         fileReader = FileReader.SequenceReader,
         solver = Day01Solver,
-        expectedValues = ExpectedValues(3, 1036, 6, 6228),
+        expectedValues =
+            ExpectedValues(
+                samplePart1 = 3,
+                puzzlePart1 = 1036,
+                samplePart2 = 6,
+                puzzlePart2 = 6228,
+            ),
     )

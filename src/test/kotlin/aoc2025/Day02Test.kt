@@ -12,5 +12,11 @@ class Day02Test :
         day = 2,
         fileReader = FileReader.FirstLineReader,
         solver = Day02Solver,
-        expectedValues = ExpectedValues(1_227_775_554L, 28_146_997_880L, 4_174_379_265L, 40_028_128_307L),
+        expectedValues =
+            ExpectedValues(
+                samplePart1 = 1_227_775_554L,
+                puzzlePart1 = 28_146_997_880L,
+                samplePart2 = 4_174_379_265L,
+                puzzlePart2 = 40_028_128_307L,
+            ),
     )
