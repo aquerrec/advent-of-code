@@ -1,8 +1,11 @@
 package utils
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import utils.Matrix.Cell
 
 class MatrixTest {
     private val matrixListOfLists =
@@ -30,22 +33,22 @@ class MatrixTest {
     @Test
     fun `should get an item of the matrix`() {
         matrix[1, 2] shouldBe "C2"
-        matrix[1, 3] shouldBe null
+        matrix.getOrNull(1, 3) shouldBe null
         matrix[Point(2, 1)] shouldBe "C2"
-        matrix[Point(3, 1)] shouldBe null
+        matrix.getOrNull(Point(3, 1)) shouldBe null
     }
 
     @Test
-    fun `should get a pair of the point and value of the cell in the matrix`() {
-        matrix.getPointOrNull(1, 2) shouldBe Pair(Point(2, 1), "C2")
-        matrix.getPointOrNull(1, 3) shouldBe null
-        matrix.getPointOrNull(Point(2, 1)) shouldBe Pair(Point(2, 1), "C2")
-        matrix.getPointOrNull(Point(3, 1)) shouldBe null
+    fun `should get a cell in the matrix`() {
+        matrix.getCellOrNull(1, 2) shouldBe Cell(Point(2, 1), "C2")
+        matrix.getCellOrNull(1, 3) shouldBe null
+        matrix.getCellOrNull(Point(2, 1)) shouldBe Cell(Point(2, 1), "C2")
+        matrix.getCellOrNull(Point(3, 1)) shouldBe null
     }
 
     @Test
     fun `should return a new matrix and have changed the desired cell with the given value`() {
-        matrix.setPoint(Point(2, 1), "XX") shouldBe
+        matrix.copyWithCellValue(Point(2, 1), "XX") shouldBe
             Matrix(
                 listOf(
                     listOf("A1", "B1", "C1"),
@@ -59,7 +62,7 @@ class MatrixTest {
 
     @Test
     fun `should return a new matrix and have changed the desired cells with the given value`() {
-        matrix.setPoints(
+        matrix.copyWithCellsValue(
             listOf(
                 Point(2, 1),
                 Point(0, 2),
@@ -78,6 +81,11 @@ class MatrixTest {
     }
 
     @Test
+    fun `should change the desired cell value with the given value and return the old value`() {
+        matrix.copy().setCell(Point(2, 1), "XX") shouldBe "C2"
+    }
+
+    @Test
     fun `should return all the points with the given value`() {
         Matrix(
             listOf(
@@ -85,29 +93,45 @@ class MatrixTest {
                 listOf("D", "A", "F"),
                 listOf("G", "A", "I"),
             ),
-        ).findAll("A") shouldBe listOf(Point(0, 0), Point(1, 1), Point(1, 2))
+        ).findAllByValue("A") shouldBe
+            listOf(
+                Point(0, 0),
+                Point(1, 1),
+                Point(1, 2),
+            )
     }
 
     @Test
-    fun `should return all the points matching the given predicate`() {
-        (Point(0, 0) to 'A') shouldBe (Point(0, 0) to 'A')
+    fun `should return all the points matching the given predicate for the value`() {
         Matrix(
             listOf(
                 listOf("A", "B", "C"),
                 listOf("D", "A", "F"),
                 listOf("G", "A", "I"),
             ),
-        ).findAll { it == "A" } shouldBe
+        ).findAllByValueMatching { it == "A" } shouldBe
             listOf(
-                Point(0, 0) to "A",
-                Point(1, 1) to "A",
-                Point(1, 2) to "A",
+                Cell(Point(0, 0), "A"),
+                Cell(Point(1, 1), "A"),
+                Cell(Point(1, 2), "A"),
             )
+    }
+
+    @Test
+    fun `should return the first point matching the given value`() {
+        matrix.first("B3") shouldBe Point(1, 2)
     }
 
     @Test
     fun `should return the first point matching the given predicate`() {
         matrix.first { it == "B3" } shouldBe Point(1, 2)
+    }
+
+    @Test
+    fun `should throw when there is no cell matching the given predicate`() {
+        assertThrows<NoSuchElementException> {
+            matrix.first { it == "Z9" }
+        }
     }
 
     @Test
@@ -157,89 +181,89 @@ class MatrixTest {
     }
 
     @Test
-    fun `should return the neighbors points without diagonals`() {
-        matrix.neighborsPoints(2, 1) shouldBe
+    fun `should return the neighbors cells without diagonals`() {
+        matrix.neighborsCells(2, 1) shouldBe
             listOf(
-                Point(1, 1) to "B2",
-                Point(1, 3) to "B4",
-                Point(0, 2) to "A3",
-                Point(2, 2) to "C3",
+                Cell(Point(1, 1), "B2"),
+                Cell(Point(1, 3), "B4"),
+                Cell(Point(0, 2), "A3"),
+                Cell(Point(2, 2), "C3"),
             )
-        matrix.neighborsPoints(0, 0) shouldBe
+        matrix.neighborsCells(0, 0) shouldBe
             listOf(
-                Point(0, 1) to "A2",
-                Point(1, 0) to "B1",
+                Cell(Point(0, 1), "A2"),
+                Cell(Point(1, 0), "B1"),
             )
-        matrix.neighborsPoints(0, 2) shouldBe
+        matrix.neighborsCells(0, 2) shouldBe
             listOf(
-                Point(2, 1) to "C2",
-                Point(1, 0) to "B1",
+                Cell(Point(2, 1), "C2"),
+                Cell(Point(1, 0), "B1"),
             )
-        matrix.neighborsPoints(2, 0) shouldBe
+        matrix.neighborsCells(2, 0) shouldBe
             listOf(
-                Point(0, 1) to "A2",
-                Point(0, 3) to "A4",
-                Point(1, 2) to "B3",
+                Cell(Point(0, 1), "A2"),
+                Cell(Point(0, 3), "A4"),
+                Cell(Point(1, 2), "B3"),
             )
-        matrix.neighborsPoints(4, 0) shouldBe
+        matrix.neighborsCells(4, 0) shouldBe
             listOf(
-                Point(0, 3) to "A4",
-                Point(1, 4) to "B5",
+                Cell(Point(0, 3), "A4"),
+                Cell(Point(1, 4), "B5"),
             )
-        matrix.neighborsPoints(4, 2) shouldBe
+        matrix.neighborsCells(4, 2) shouldBe
             listOf(
-                Point(2, 3) to "C4",
-                Point(1, 4) to "B5",
+                Cell(Point(2, 3), "C4"),
+                Cell(Point(1, 4), "B5"),
             )
-        matrix.neighborsPoints(99, 99) shouldBe emptyList()
+        matrix.neighborsCells(99, 99) shouldBe emptyList()
     }
 
     @Test
-    fun `should return the neighbors points with diagonals`() {
-        matrix.neighborsPoints(2, 1, true) shouldBe
+    fun `should return the neighbors cells with diagonals`() {
+        matrix.neighborsCells(2, 1, true) shouldBe
             listOf(
-                Point(1, 1) to "B2",
-                Point(1, 3) to "B4",
-                Point(0, 2) to "A3",
-                Point(2, 2) to "C3",
-                Point(0, 1) to "A2",
-                Point(2, 1) to "C2",
-                Point(0, 3) to "A4",
-                Point(2, 3) to "C4",
+                Cell(Point(1, 1), "B2"),
+                Cell(Point(1, 3), "B4"),
+                Cell(Point(0, 2), "A3"),
+                Cell(Point(2, 2), "C3"),
+                Cell(Point(0, 1), "A2"),
+                Cell(Point(2, 1), "C2"),
+                Cell(Point(0, 3), "A4"),
+                Cell(Point(2, 3), "C4"),
             )
-        matrix.neighborsPoints(0, 0, true) shouldBe
+        matrix.neighborsCells(0, 0, true) shouldBe
             listOf(
-                Point(0, 1) to "A2",
-                Point(1, 0) to "B1",
-                Point(1, 1) to "B2",
+                Cell(Point(0, 1), "A2"),
+                Cell(Point(1, 0), "B1"),
+                Cell(Point(1, 1), "B2"),
             )
-        matrix.neighborsPoints(0, 2, true) shouldBe
+        matrix.neighborsCells(0, 2, true) shouldBe
             listOf(
-                Point(2, 1) to "C2",
-                Point(1, 0) to "B1",
-                Point(1, 1) to "B2",
+                Cell(Point(2, 1), "C2"),
+                Cell(Point(1, 0), "B1"),
+                Cell(Point(1, 1), "B2"),
             )
-        matrix.neighborsPoints(2, 0, true) shouldBe
+        matrix.neighborsCells(2, 0, true) shouldBe
             listOf(
-                Point(0, 1) to "A2",
-                Point(0, 3) to "A4",
-                Point(1, 2) to "B3",
-                Point(1, 1) to "B2",
-                Point(1, 3) to "B4",
+                Cell(Point(0, 1), "A2"),
+                Cell(Point(0, 3), "A4"),
+                Cell(Point(1, 2), "B3"),
+                Cell(Point(1, 1), "B2"),
+                Cell(Point(1, 3), "B4"),
             )
-        matrix.neighborsPoints(4, 0, true) shouldBe
+        matrix.neighborsCells(4, 0, true) shouldBe
             listOf(
-                Point(0, 3) to "A4",
-                Point(1, 4) to "B5",
-                Point(1, 3) to "B4",
+                Cell(Point(0, 3), "A4"),
+                Cell(Point(1, 4), "B5"),
+                Cell(Point(1, 3), "B4"),
             )
-        matrix.neighborsPoints(4, 2, true) shouldBe
+        matrix.neighborsCells(4, 2, true) shouldBe
             listOf(
-                Point(2, 3) to "C4",
-                Point(1, 4) to "B5",
-                Point(1, 3) to "B4",
+                Cell(Point(2, 3), "C4"),
+                Cell(Point(1, 4), "B5"),
+                Cell(Point(1, 3), "B4"),
             )
-        matrix.neighborsPoints(99, 99, true) shouldBe emptyList()
+        matrix.neighborsCells(99, 99, true).shouldBeEmpty()
     }
 
     @Test

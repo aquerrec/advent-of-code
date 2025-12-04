@@ -3,10 +3,10 @@ package aoc2024
 import utils.Matrix
 import utils.Point
 
-private fun Matrix<Char>.findAllAntennasAndAntinodesPositions(): List<Pair<Point, Char>> = findAll { it != '.' }
+private fun Matrix<Char>.findAllAntennasAndAntinodesPositions(): List<Matrix.Cell<Char>> = findAllByValueMatching { it != '.' }
 
 private fun Matrix<Char>.findAllAntennasPositionsGroupedByFrequency(): Map<Char, List<Point>> =
-    findAll { it != '.' }.groupBy({ it.second }) { it.first }
+    findAllByValueMatching { it != '.' }.groupBy({ it.value }) { it.coordinate }
 
 private fun Matrix<Char>.getAllAntinodesPositions(withResonantHarmonics: Boolean = false): Set<Point> =
     this
@@ -45,7 +45,7 @@ fun Matrix<Char>.solveDay08Part1(): Int = this.getAllAntinodesPositions().size
  */
 fun Matrix<Char>.solveDay08Part2(): Int =
     this
-        .setPoints(
+        .copyWithCellsValue(
             points = getAllAntinodesPositions(withResonantHarmonics = true),
             value = '#',
         ).findAllAntennasAndAntinodesPositions()

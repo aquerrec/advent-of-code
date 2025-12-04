@@ -70,7 +70,7 @@ fun Matrix<Char>.solveDay06Part2(): Int =
                 .filter { it != startPosition }
                 .count {
                     this
-                        .setPoint(it, OBSTRUCTION_CHAR)
+                        .copyWithCellValue(it, OBSTRUCTION_CHAR)
                         .getGuardPatrolRoute(startPosition) is GuardPatrolling.StuckInALoop
                 }
         }

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import utils.Matrix
 import utils.toMatrix
 import java.io.BufferedReader
+import kotlin.time.measureTimedValue
 
 data class ExpectedValues<T>(
     val samplePart1: T,
@@ -28,12 +29,18 @@ abstract class AdventOfCodeTester<IN, OUT>(
     inner class PartOne {
         @Test
         fun `solves part 1 - sample input`() {
-            solver.solvePart1(sampleInput) shouldBe expectedValues.samplePart1
+            measureTimedValue { solver.solvePart1(sampleInput) }.let { (answer, duration) ->
+                println("part 1 - sample input took $duration")
+                answer shouldBe expectedValues.samplePart1
+            }
         }
 
         @Test
         fun `solves part 1 - puzzle input`() {
-            solver.solvePart1(puzzleInput) shouldBe expectedValues.puzzlePart1
+            measureTimedValue { solver.solvePart1(puzzleInput) }.let { (answer, duration) ->
+                println("part 1 - puzzle input took $duration")
+                answer shouldBe expectedValues.puzzlePart1
+            }
         }
     }
 
@@ -41,12 +48,18 @@ abstract class AdventOfCodeTester<IN, OUT>(
     inner class PartTwo {
         @Test
         fun `solves part 2 - sample input`() {
-            solver.solvePart2(sampleInput) shouldBe expectedValues.samplePart2
+            measureTimedValue { solver.solvePart2(sampleInput) }.let { (answer, duration) ->
+                println("part 2 - sample input took $duration")
+                answer shouldBe expectedValues.samplePart2
+            }
         }
 
         @Test
         fun `solves part 2 - puzzle input`() {
-            solver.solvePart2(puzzleInput) shouldBe expectedValues.puzzlePart2
+            measureTimedValue { solver.solvePart2(puzzleInput) }.let { (answer, duration) ->
+                println("part 2 - puzzle input took $duration")
+                answer shouldBe expectedValues.puzzlePart2
+            }
         }
     }
 }

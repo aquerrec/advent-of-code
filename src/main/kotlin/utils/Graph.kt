@@ -9,15 +9,14 @@ class Graph<T> {
         fun <T> fromMatrix(
             matrix: Matrix<T>,
             edgeType: EdgeType = EdgeType.DIRECTED,
-            withConstraint: (p1: Pair<Point, T>, p2: Pair<Point, T>) -> Boolean = { _, _ -> true },
-        ) = Graph<Pair<Point, T>>().apply {
+            withConstraint: (p1: Matrix.Cell<T>, p2: Matrix.Cell<T>) -> Boolean = { _, _ -> true },
+        ) = Graph<Matrix.Cell<T>>().apply {
             matrix.rowsIndices.forEach { row ->
                 matrix.columnsIndices.forEach { col ->
-                    matrix.getPointOrNull(row, col)?.let { current ->
+                    matrix.getCellOrNull(row, col)?.let { current ->
                         val source = createVertex(current)
                         matrix
-                            .neighborsPoints(current.first)
-                            .filter { withConstraint(current, it) }
+                            .neighborsCells(current.coordinate) { withConstraint(current, it) }
                             .forEach { add(edgeType, source, Vertex(it)) }
                     }
                 }

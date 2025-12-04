@@ -2,17 +2,16 @@ package aoc2024
 
 import utils.Graph
 import utils.Matrix
-import utils.Point
 import utils.Vertex
 
-private fun Matrix<Int>.allTrailheadsVertices() = this.findAll { it == 0 }.map { Vertex(it) }
+private fun Matrix<Int>.allTrailheadsVertices() = this.findAllByValueMatching { it == 0 }.map { Vertex(it) }
 
-private fun Matrix<Int>.allTrailEndsVertices() = this.findAll { it == 9 }.map { Vertex(it) }
+private fun Matrix<Int>.allTrailEndsVertices() = this.findAllByValueMatching { it == 9 }.map { Vertex(it) }
 
 private fun hikingTrailConstraint(
-    p1: Pair<Point, Int>,
-    p2: Pair<Point, Int>,
-) = p1.second + 1 == p2.second
+    p1: Matrix.Cell<Int>,
+    p2: Matrix.Cell<Int>,
+) = p1.value + 1 == p2.value
 
 /**
  * Compute the sum of the scores of all trailheads on your topographic map.

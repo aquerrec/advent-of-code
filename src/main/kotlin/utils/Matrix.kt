@@ -21,6 +21,11 @@ class Matrix<T>(
         },
     )
 
+    data class Cell<T>(
+        val coordinate: Point,
+        val value: T,
+    )
+
     private val matrix = MutableList(inputMatrix.size) { i -> inputMatrix[i].toMutableList() }
 
     val rows = matrix.size
@@ -60,26 +65,21 @@ class Matrix<T>(
     fun getOrNull(
         row: Int,
         col: Int,
-    ): T? =
-        if (row < 0 || row >= matrix.size || col < 0 || col >= matrix[row].size) {
-            null
-        } else {
-            matrix[row][col]
-        }
+    ): T? = matrix.getOrNull(row)?.getOrNull(col)
 
     fun getOrNull(point: Point): T? = getOrNull(point.y, point.x)
 
-    fun getPointOrNull(
+    fun getCellOrNull(
         row: Int,
         col: Int,
-    ): Pair<Point, T>? = this.getOrNull(row, col)?.let { Point(col, row) to it }
+    ): Cell<T>? = this.getOrNull(row, col)?.let { Cell(Point(col, row), it) }
 
-    fun getPointOrNull(point: Point) = getPointOrNull(point.y, point.x)
+    fun getCellOrNull(point: Point) = getCellOrNull(point.y, point.x)
 
     /**
      * Returns a new matrix with the element at the given [point] set to [value].
      */
-    fun setPoint(
+    fun copyWithCellValue(
         point: Point,
         value: T,
     ): Matrix<T> {
@@ -91,7 +91,7 @@ class Matrix<T>(
     /**
      * Returns a new matrix with the elements at the given [points] set to [value].
      */
-    fun setPoints(
+    fun copyWithCellsValue(
         points: Collection<Point>,
         value: T,
     ): Matrix<T> {
@@ -100,30 +100,52 @@ class Matrix<T>(
         return newMatrix
     }
 
-    fun findAll(value: T): List<Point> =
+    /**
+     * Mutates the cell at the given [point] set to [value].
+     */
+    fun setCell(
+        point: Point,
+        value: T,
+    ): T {
+        val old = get(point)
+        matrix[point.y][point.x] = value
+        return old
+    }
+
+    fun findAllByValue(value: T): List<Point> = findAllByValueMatching { it == value }.map { it.coordinate }
+
+    fun findAllByValueMatching(predicate: (T) -> Boolean): List<Cell<T>> =
         matrix
             .flatMapIndexed { rowIndex, columns ->
                 columns.mapIndexedNotNull { colIndex, cellValue ->
-                    cellValue.takeIf { it == value }?.let { Point(colIndex, rowIndex) }
+                    val cell = Cell(Point(colIndex, rowIndex), cellValue)
+                    if (predicate(cellValue)) cell else null
                 }
             }
 
-    fun findAll(predicate: (T) -> Boolean): List<Pair<Point, T>> =
+    fun findAllCells(predicate: (Cell<T>) -> Boolean): List<Cell<T>> =
         matrix
             .flatMapIndexed { rowIndex, columns ->
                 columns.mapIndexedNotNull { colIndex, cellValue ->
-                    if (predicate(cellValue)) Point(colIndex, rowIndex) to cellValue else null
+                    val cell = Cell(Point(colIndex, rowIndex), cellValue)
+                    if (predicate(cell)) cell else null
                 }
             }
 
-    fun first(predicate: (T) -> Boolean): Point {
+    fun first(value: T): Point? = firstOrNull { it == value }
+
+    fun first(predicate: (T) -> Boolean): Point =
+        firstOrNull(predicate)
+            ?: throw NoSuchElementException("Matrix contains no element matching the predicate.")
+
+    fun firstOrNull(predicate: (T) -> Boolean): Point? {
         matrix
             .forEachIndexed { rowIndex, columns ->
                 columns.forEachIndexed { colIndex, value ->
                     if (predicate(value)) return Point(colIndex, rowIndex)
                 }
             }
-        throw NoSuchElementException("Matrix contains no element matching the predicate.")
+        return null
     }
 
     /**
@@ -166,26 +188,34 @@ class Matrix<T>(
      * Does NOT return diagonals if [includeDiagonal] is false
      * Excludes out of bounds points
      */
-    fun neighborsPoints(
+    fun neighborsCells(
         row: Int,
         col: Int,
         includeDiagonal: Boolean = false,
-    ): List<Pair<Point, T>> =
+        predicate: (Cell<T>) -> Boolean = { true },
+    ): List<Cell<T>> =
         listOfNotNull(
-            getPointOrNull(row - 1, col),
-            getPointOrNull(row + 1, col),
-            getPointOrNull(row, col - 1),
-            getPointOrNull(row, col + 1),
-            if (includeDiagonal) getPointOrNull(row - 1, col - 1) else null,
-            if (includeDiagonal) getPointOrNull(row - 1, col + 1) else null,
-            if (includeDiagonal) getPointOrNull(row + 1, col - 1) else null,
-            if (includeDiagonal) getPointOrNull(row + 1, col + 1) else null,
-        )
+            getCellOrNull(row - 1, col),
+            getCellOrNull(row + 1, col),
+            getCellOrNull(row, col - 1),
+            getCellOrNull(row, col + 1),
+            if (includeDiagonal) getCellOrNull(row - 1, col - 1) else null,
+            if (includeDiagonal) getCellOrNull(row - 1, col + 1) else null,
+            if (includeDiagonal) getCellOrNull(row + 1, col - 1) else null,
+            if (includeDiagonal) getCellOrNull(row + 1, col + 1) else null,
+        ).filter { predicate(it) }
 
-    fun neighborsPoints(
+    fun neighborsCells(
         point: Point,
         includeDiagonal: Boolean = false,
-    ) = neighborsPoints(point.y, point.x, includeDiagonal)
+        predicate: (Cell<T>) -> Boolean = { true },
+    ) = neighborsCells(point.y, point.x, includeDiagonal, predicate)
+
+    fun neighborsCells(
+        cell: Cell<T>,
+        includeDiagonal: Boolean = false,
+        predicate: (Cell<T>) -> Boolean = { true },
+    ) = neighborsCells(cell.coordinate, includeDiagonal, predicate)
 
     /**
      * Transpose this matrix.
@@ -250,8 +280,14 @@ fun <T : Number> Matrix<T>.determinant(): Double {
     require(this.rows == this.columns) { "Matrix must be square" }
 
     when (this.rows) {
-        1 -> return this[0, 0].toDouble()
-        2 -> return this[0, 0].toDouble() * this[1, 1].toDouble() - this[0, 1].toDouble() * this[1, 0].toDouble()
+        1 -> {
+            return this[0, 0].toDouble()
+        }
+
+        2 -> {
+            return this[0, 0].toDouble() * this[1, 1].toDouble() - this[0, 1].toDouble() * this[1, 0].toDouble()
+        }
+
         else -> {
             var det = 0.0
             for (c in 0 until this.columns) {

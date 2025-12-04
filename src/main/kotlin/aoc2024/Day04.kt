@@ -9,10 +9,9 @@ import utils.toMatrix
 fun Sequence<String>.solveDay04Part1(): Int {
     val matrix = this.toMatrix()
 
-    return matrix.findAll('X').sumOf { xPoint ->
+    return matrix.findAllByValue('X').sumOf { xPoint ->
         matrix
-            .neighborsPoints(xPoint, true)
-            .filter { it.second == 'M' }
+            .neighborsCells(xPoint, true) { it.value == 'M' }
             .count { (mPoint) ->
                 val direction = xPoint.directionToAdjacent(mPoint)
                 matrix[mPoint.move(direction)] == 'A' &&
@@ -27,13 +26,13 @@ fun Sequence<String>.solveDay04Part1(): Int {
 fun Sequence<String>.solveDay04Part2(): Int {
     val matrix = this.toMatrix()
 
-    return matrix.findAll('A').count {
+    return matrix.findAllByValue('A').count {
         val upLeft = matrix[it.move(Direction.UP_LEFT)]
         val upRight = matrix[it.move(Direction.UP_RIGHT)]
         val downRight = matrix[it.move(Direction.DOWN_RIGHT)]
         val downLeft = matrix[it.move(Direction.DOWN_LEFT)]
 
-        (upLeft == 'M' && downRight == 'S' || upLeft == 'S' && downRight == 'M') &&
-            (upRight == 'M' && downLeft == 'S' || upRight == 'S' && downLeft == 'M')
+        (((upLeft == 'M') && (downRight == 'S')) || ((upLeft == 'S') && (downRight == 'M'))) &&
+            (((upRight == 'M') && (downLeft == 'S')) || ((upRight == 'S') && (downLeft == 'M')))
     }
 }
