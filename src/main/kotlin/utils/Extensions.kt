@@ -63,6 +63,22 @@ operator fun Long?.plus(other: Long?): Long = (this ?: 0L) + (other ?: 0L)
 infix fun Int.toward(to: Int): IntProgression = IntProgression.fromClosedRange(this, to, 1.takeIf { this <= to } ?: -1)
 
 /**
+ * Returns true if this range overlaps with the other range.
+ */
+fun LongRange.overlaps(other: LongRange): Boolean =
+    this.contains(other.start) || this.contains(other.endInclusive) || other.contains(this.start) || other.contains(this.endInclusive)
+
+/**
+ * Merges this range with another range to create a new range that spans both ranges.
+ */
+fun LongRange.merge(other: LongRange): LongRange = LongRange(minOf(start, other.start), maxOf(endInclusive, other.endInclusive))
+
+/**
+ * Returns the size of this range (number of elements).
+ */
+fun LongRange.size(): Long = endInclusive - start + 1
+
+/**
  * Pads a progression of Int to the desired size, using the final Int as the pad value
  */
 infix fun IntProgression.padTo(newSize: Int): List<Int> = toList().padTo(newSize)

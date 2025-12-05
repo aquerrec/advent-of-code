@@ -54,6 +54,28 @@ class ExtensionsTest {
     }
 
     @Test
+    fun `should verify if long ranges overlap`() {
+        (1L..5L).overlaps(3L..7L) shouldBe true
+        (1L..5L).overlaps(6L..8L) shouldBe false
+        (1L..5L).overlaps(0L..2L) shouldBe true
+        (3L..7L).overlaps(4L..6L) shouldBe true
+    }
+
+    @Test
+    fun `should merge two long ranges`() {
+        (1L..5L).merge(3L..7L) shouldBe (1L..7L)
+        (1L..5L).merge(6L..8L) shouldBe (1L..8L)
+        (3L..7L).merge(1L..4L) shouldBe (1L..7L)
+    }
+
+    @Test
+    fun `should calculate long range size`() {
+        (1L..5L).size() shouldBe 5L
+        (0L..10L).size() shouldBe 11L
+        (5L..5L).size() shouldBe 1L
+    }
+
+    @Test
     fun `should pad a progression of integers to the desired size`() {
         1..5 padTo 10 shouldBe listOf(1, 2, 3, 4, 5, 5, 5, 5, 5, 5)
         (5 downTo 1) padTo 10 shouldBe listOf(5, 4, 3, 2, 1, 1, 1, 1, 1, 1)
