@@ -48,6 +48,12 @@ class Matrix<T>(
     operator fun contains(point: Point) = contains(point.y, point.x)
 
     /**
+     * Returns the entire row at the given [row] index.
+     * Index is 0-based.
+     */
+    operator fun get(row: Int): List<T> = matrix[row].toList()
+
+    /**
      * Returns the element at the given [row] and [col].
      * Indexes are 0-based.
      */
@@ -148,6 +154,16 @@ class Matrix<T>(
         return null
     }
 
+    fun forEachRowIndexed(action: (rowIndex: Int, row: List<T>) -> Unit) = matrix.forEachIndexed(action)
+
+    fun forEachRowIndexedReversed(action: (rowIndex: Int, row: List<T>) -> Unit) =
+        rowsIndices.reversed().forEach { rowIdx -> action(rowIdx, row(rowIdx)) }
+
+    fun <OUT> mapRowIndexed(action: (rowIndex: Int, row: List<T>) -> OUT) = rowsIndices.map { rowIdx -> action(rowIdx, row(rowIdx)) }
+
+    fun <OUT> mapRowIndexedReversed(action: (rowIndex: Int, row: List<T>) -> OUT) =
+        rowsIndices.reversed().map { rowIdx -> action(rowIdx, row(rowIdx)) }
+
     /**
      * Returns the row at the given [row] index.
      * Index is 0-based.
@@ -159,6 +175,8 @@ class Matrix<T>(
      * Index is 0-based.
      */
     fun column(col: Int): List<T> = List(matrix.size) { row -> matrix[row][col] }
+
+    fun <OUT> mapRow(transform: (List<T>) -> List<OUT>): Matrix<OUT> = Matrix(matrix.map { transform(it) })
 
     /**
      * Return items in matrix above, below, left, right of given indexes
@@ -216,6 +234,13 @@ class Matrix<T>(
         includeDiagonal: Boolean = false,
         predicate: (Cell<T>) -> Boolean = { true },
     ) = neighborsCells(cell.coordinate, includeDiagonal, predicate)
+
+    fun subMatrixRows(
+        fromIndex: Int,
+        toIndex: Int,
+    ) = Matrix(matrix.subList(fromIndex, toIndex))
+
+    fun take(n: Int) = Matrix(matrix.take(n))
 
     /**
      * Transpose this matrix.
