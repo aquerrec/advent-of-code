@@ -9,20 +9,23 @@ class Graph<T> {
         fun <T> fromMatrix(
             matrix: Matrix<T>,
             edgeType: EdgeType = EdgeType.DIRECTED,
-            withConstraint: (p1: Matrix.Cell<T>, p2: Matrix.Cell<T>) -> Boolean = { _, _ -> true },
+            withCellConstraint: (cell: Matrix.Cell<T>) -> Boolean = { true },
+            neighborsSelector: (current: Matrix.Cell<T>) -> List<Matrix.Cell<T>> = { current -> matrix.neighborsCells(current) },
+            withNeighborsConstraint: (p1: Matrix.Cell<T>, p2: Matrix.Cell<T>) -> Boolean = { _, _ -> true },
         ) = Graph<Matrix.Cell<T>>().apply {
             matrix.rowsIndices.forEach { row ->
                 matrix.columnsIndices.forEach { col ->
                     matrix.getCellOrNull(row, col)?.let { current ->
-                        val source = createVertex(current)
-                        matrix
-                            .neighborsCells(current.coordinate) { withConstraint(current, it) }
-                            .forEach { add(edgeType, source, Vertex(it)) }
+                        if (withCellConstraint(current)) {
+                            val source = createVertex(current)
+                            neighborsSelector(current)
+                                .filter { withNeighborsConstraint(current, it) }
+                                .forEach { add(edgeType, source, Vertex(it)) }
+                        }
                     }
                 }
             }
         }
-    }
 
     fun createVertex(data: T): Vertex<T> {
         val vertex = Vertex(data)
@@ -62,10 +65,14 @@ class Graph<T> {
 
     fun edges(source: Vertex<T>): List<Edge<T>> = adjacencyMap[source] ?: emptyList()
 
+    fun leafs(): List<Vertex<T>> = adjacencyMap.filter { it.value.isEmpty() }.keys.toList()
+
     fun weight(
         source: Vertex<T>,
         destination: Vertex<T>,
     ): Int? = edges(source).firstOrNull { it.destination == destination }?.weight
+
+    fun countLeafs(): Int = adjacencyMap.count { it.value.isEmpty() }
 
     fun numberOfPaths(
         source: Vertex<T>,

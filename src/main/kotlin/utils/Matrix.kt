@@ -110,13 +110,19 @@ class Matrix<T>(
      * Mutates the cell at the given [point] set to [value].
      */
     fun setCell(
-        point: Point,
+        row: Int,
+        col: Int,
         value: T,
     ): T {
-        val old = get(point)
-        matrix[point.y][point.x] = value
+        val old = get(row, col)
+        matrix[row][col] = value
         return old
     }
+
+    fun setCell(
+        point: Point,
+        value: T,
+    ) = setCell(point.y, point.x, value)
 
     fun findAllByValue(value: T): List<Point> = findAllByValueMatching { it == value }.map { it.coordinate }
 

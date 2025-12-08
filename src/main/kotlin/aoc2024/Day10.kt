@@ -19,7 +19,7 @@ private fun hikingTrailConstraint(
 fun Matrix<Int>.solveDay10Part1(): Int {
     val allTrailheads = this.allTrailheadsVertices()
     val allTrailEnds = this.allTrailEndsVertices()
-    val graph = Graph.fromMatrix(this, withConstraint = ::hikingTrailConstraint).also { println(it) }
+    val graph = Graph.fromMatrix(this, withNeighborsConstraint = ::hikingTrailConstraint).also { println(it) }
     return allTrailheads.sumOf { trailhead ->
         allTrailEnds.count { end -> graph.numberOfPaths(trailhead, end) > 0 }
     }
@@ -31,7 +31,7 @@ fun Matrix<Int>.solveDay10Part1(): Int {
 fun Matrix<Int>.solveDay10Part2(): Int {
     val allTrailheads = this.allTrailheadsVertices()
     val allTrailEnds = this.allTrailEndsVertices()
-    val graph = Graph.fromMatrix(this, withConstraint = ::hikingTrailConstraint)
+    val graph = Graph.fromMatrix(this, withNeighborsConstraint = ::hikingTrailConstraint)
     return allTrailheads.sumOf { trailhead ->
         allTrailEnds.sumOf { end -> graph.numberOfPaths(trailhead, end) }
     }

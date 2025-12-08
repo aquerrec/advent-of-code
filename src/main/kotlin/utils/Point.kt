@@ -106,6 +106,8 @@ data class Point(
             else -> throw IllegalStateException("Point $this does not support rotation $rotation")
         }
 
+    fun reverse(): Point = Point(y, x)
+
     /**
      * Returns the list of all points in a rectangle from this point to the target point, treating the two points as corners.
      */
