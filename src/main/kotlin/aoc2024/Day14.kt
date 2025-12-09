@@ -12,10 +12,10 @@ Day 14: Restroom Redoubt
 
 private fun Boundaries.quadrants() =
     listOf(
-        Rectangle(topLeft = Point(0, 0), bottomRight = Point((sizeX / 2) - 1, (sizeY / 2) - 1)),
-        Rectangle(topLeft = Point((sizeX / 2) + 1, 0), bottomRight = Point(maxX, (sizeY / 2) - 1)),
-        Rectangle(topLeft = Point(0, (sizeY / 2) + 1), bottomRight = Point((sizeX / 2) - 1, maxY)),
-        Rectangle(topLeft = Point((sizeX / 2) + 1, (sizeY / 2) + 1), bottomRight = Point(maxX, maxY)),
+        Rectangle(point1 = Point(0, 0), point2 = Point((sizeX / 2) - 1, (sizeY / 2) - 1)),
+        Rectangle(point1 = Point((sizeX / 2) + 1, 0), point2 = Point(maxX, (sizeY / 2) - 1)),
+        Rectangle(point1 = Point(0, (sizeY / 2) + 1), point2 = Point((sizeX / 2) - 1, maxY)),
+        Rectangle(point1 = Point((sizeX / 2) + 1, (sizeY / 2) + 1), point2 = Point(maxX, maxY)),
     )
 
 private data class Robot(

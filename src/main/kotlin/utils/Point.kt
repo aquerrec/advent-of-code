@@ -161,13 +161,6 @@ data class Boundaries(
     }
 }
 
-data class Rectangle(
-    val topLeft: Point,
-    val bottomRight: Point,
-) {
-    operator fun contains(point: Point): Boolean = point.x in topLeft.x..bottomRight.x && point.y in topLeft.y..bottomRight.y
-}
-
 /**
  * Creates an in-order list of all points visited by drawing a line from each Point to the next
  * Ex: [(0,0), (2,0), (5,5)] -> [(0,0), (1,0), (2,0), (3,1), (4,2), (5,3), (5,4), (5,5)]
