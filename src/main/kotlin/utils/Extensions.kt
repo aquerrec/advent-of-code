@@ -5,6 +5,8 @@ package utils
  */
 fun String.countDifferencesWith(other: String) = this.zip(other).count { it.first != it.second }
 
+fun String.dropFirstAndLast(n: Int): String = this.substring(n, this.length - n)
+
 /**
  * Returns the first digit of a string.
  * Ex: "abc123" returns '1'
@@ -40,7 +42,12 @@ fun String.splitHalf(): Pair<String, String> {
  * Split a string into a list of integers.
  * Ex: "01234" becomes [0, 1, 2, 3, 4]
  */
-fun String.splitToInt(): List<Int> = map(Character::getNumericValue)
+fun String.splitToInt(separator: String? = null): List<Int> =
+    if (separator != null) {
+        split(separator).map(String::toInt)
+    } else {
+        map(Character::getNumericValue)
+    }
 
 /**
  * Removes all occurrences of the given values from the string.
