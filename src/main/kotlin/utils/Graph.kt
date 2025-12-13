@@ -6,11 +6,24 @@ class Graph<T> {
     val adjacencyMap = mutableMapOf<Vertex<T>, MutableList<Edge<T>>>()
 
     companion object {
+        fun <T> fromDirectedGraph(map: Map<T, List<T>>): Graph<T> =
+            Graph<T>().apply {
+                map.forEach { (source, edges) ->
+                    val sourceVertex = createVertex(source)
+                    edges.forEach { destination ->
+                        val destinationVertex = Vertex(destination)
+                        addDirectedEdge(sourceVertex, destinationVertex)
+                    }
+                }
+            }
+
         fun <T> fromMatrix(
             matrix: Matrix<T>,
             edgeType: EdgeType = EdgeType.DIRECTED,
             withCellConstraint: (cell: Matrix.Cell<T>) -> Boolean = { true },
-            neighborsSelector: (current: Matrix.Cell<T>) -> List<Matrix.Cell<T>> = { current -> matrix.neighborsCells(current) },
+            neighborsSelector: (current: Matrix.Cell<T>) -> List<Matrix.Cell<T>> = { current ->
+                matrix.neighborsCells(current)
+            },
             withNeighborsConstraint: (p1: Matrix.Cell<T>, p2: Matrix.Cell<T>) -> Boolean = { _, _ -> true },
         ) = Graph<Matrix.Cell<T>>().apply {
             matrix.rowsIndices.forEach { row ->
@@ -39,7 +52,7 @@ class Graph<T> {
         weight: Int? = null,
     ) {
         val edge = Edge(source, destination, weight)
-        adjacencyMap[source]?.add(edge)
+        adjacencyMap.getOrPut(source) { mutableListOf() }.add(edge)
     }
 
     fun addUndirectedEdge(
@@ -77,31 +90,20 @@ class Graph<T> {
     fun numberOfPaths(
         source: Vertex<T>,
         destination: Vertex<T>,
-    ): Int {
-        val numberOfPaths = Ref(0)
-        val visited: MutableSet<Vertex<T>> = mutableSetOf()
-        paths(source, destination, visited, numberOfPaths)
-        return numberOfPaths.value
-    }
-
-    private fun paths(
-        source: Vertex<T>,
-        destination: Vertex<T>,
-        visited: MutableSet<Vertex<T>>,
-        pathCount: Ref<Int>,
-    ) {
-        visited.add(source)
+        counter: MutableMap<Vertex<T>, Long> = mutableMapOf(),
+    ): Long {
         if (source == destination) {
-            pathCount.value += 1
+            return 1L
+        } else if (counter.containsKey(source)) {
+            return counter.getValue(source)
         } else {
-            val neighbors = edges(source)
-            neighbors.forEach { edge ->
-                if (edge.destination !in visited) {
-                    paths(edge.destination, destination, visited, pathCount)
+            val count =
+                edges(source).sumOf { edge ->
+                    numberOfPaths(edge.destination, destination, counter)
                 }
-            }
+            counter[source] = count
+            return count
         }
-        visited.remove(source)
     }
 
     override fun toString(): String =
@@ -114,9 +116,11 @@ class Graph<T> {
         }
 }
 
-data class Ref<T>(
-    var value: T,
-)
+data class Vertex<T>(
+    val data: T,
+) {
+    override fun toString(): String = data.toString()
+}
 
 data class Edge<T>(
     val source: Vertex<T>,
@@ -129,10 +133,4 @@ data class Edge<T>(
     }
 
     override fun toString(): String = "$source -> $destination${if (weight != null) " [$weight]" else ""}"
-}
-
-data class Vertex<T>(
-    val data: T,
-) {
-    override fun toString(): String = data.toString()
 }

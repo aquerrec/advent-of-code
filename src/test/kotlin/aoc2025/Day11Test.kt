@@ -6,32 +6,34 @@ import AdventOfCode
 import AdventOfCodeTester2
 import FileReader
 
-class Day08Test :
+class Day11Test :
     AdventOfCodeTester2<Sequence<String>, Long>(
         year = 2025,
-        day = 8,
+        day = 11,
         fileReader = FileReader.SequenceReader,
         parts =
             AdventOfCode(
                 samplePart1 =
                     AdventOfCode.SamplePart(
-                        solve = { input -> Day08Solver.solvePart1(input, 10) },
-                        expectedValue = 40L,
+                        sampleFilename = "sample1.txt",
+                        solve = Day11Solver::solvePart1,
+                        expectedValue = 5L,
                     ),
                 puzzlePart1 =
                     AdventOfCode.PuzzlePart(
-                        solve = { input -> Day08Solver.solvePart1(input, 1000) },
-                        expectedValue = 72_150L,
+                        solve = Day11Solver::solvePart1,
+                        expectedValue = 534L,
                     ),
                 samplePart2 =
                     AdventOfCode.SamplePart(
-                        solve = { input -> Day08Solver.solvePart2(input, 10) },
-                        expectedValue = 25_272L,
+                        sampleFilename = "sample2.txt",
+                        solve = Day11Solver::solvePart2,
+                        expectedValue = 2L,
                     ),
                 puzzlePart2 =
                     AdventOfCode.PuzzlePart(
-                        solve = { input -> Day08Solver.solvePart2(input, 1000) },
-                        expectedValue = 3_926_518_899L,
+                        solve = Day11Solver::solvePart2,
+                        expectedValue = 499_645_520_864_100L,
                     ),
             ),
     )

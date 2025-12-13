@@ -33,6 +33,6 @@ fun Matrix<Int>.solveDay10Part2(): Int {
     val allTrailEnds = this.allTrailEndsVertices()
     val graph = Graph.fromMatrix(this, withNeighborsConstraint = ::hikingTrailConstraint)
     return allTrailheads.sumOf { trailhead ->
-        allTrailEnds.sumOf { end -> graph.numberOfPaths(trailhead, end) }
+        allTrailEnds.sumOf { end -> graph.numberOfPaths(trailhead, end).toInt() }
     }
 }
